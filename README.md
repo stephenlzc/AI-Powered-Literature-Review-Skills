@@ -507,42 +507,12 @@ ER  -
 
 本项目在开发过程中参考和整合了以下优秀开源项目的思路和设计：
 
-### 1. [flonat/claude-research](https://github.com/flonat/claude-research)
-
-**贡献**：
-- 8阶段工作流设计理念
-- Agent Swarm 并行架构
-- 引用验证规则和流程
-- Better BibTeX 格式规范
-- Session Log 和检查点机制
-
-> "Comprehensive academic literature workflow: discover, verify, organize, synthesize."
-
-### 2. [openclaw/skills](https://github.com/openclaw/skills)
-
-**贡献**：
-- 多数据库并行搜索策略
-- 智能去重算法设计
-- 标准化引用格式输出
-- 简洁的 Agent 设计模式
-
-### 3. [cookjohn/cnki-skills](https://github.com/cookjohn/cnki-skills)
-
-**贡献**：
-- CNKI 自动化检索实现
-- 验证码处理机制
-- 期刊影响因子查询
-- Zotero 导出集成
-- Chrome DevTools MCP 集成方案
-
-### 4. [diegosouzapw/awesome-omni-skill](https://github.com/diegosouzapw/awesome-omni-skill)
-
-**贡献**：
-- 统一 Paper 数据模型设计
-- 14+ 学术平台接口整合
-- 速率限制管理方案
-- 错误处理和重试机制
-- 标准化数据接口
+| 项目 | 核心贡献 | 描述 |
+|------|---------|------|
+| [flonat/claude-research](https://github.com/flonat/claude-research) | 8阶段工作流、Agent Swarm 架构、引用验证、Better BibTeX、Session Log | "Comprehensive academic literature workflow: discover, verify, organize, synthesize." |
+| [openclaw/skills](https://github.com/openclaw/skills) | 多数据库并行搜索、智能去重、标准化引用格式、Agent 设计模式 | 多数据库学术搜索策略 |
+| [cookjohn/cnki-skills](https://github.com/cookjohn/cnki-skills) | CNKI 自动化检索、验证码处理、影响因子查询、Zotero 导出、MCP 集成 | CNKI 中文文献检索方案 |
+| [diegosouzapw/awesome-omni-skill](https://github.com/diegosouzapw/awesome-omni-skill) | Paper 数据模型、14+ 学术平台接口、速率限制、错误处理、标准化接口 | 统一学术数据接口设计 |
 
 感谢以上项目的作者们为学术工具开源社区做出的贡献！
 
