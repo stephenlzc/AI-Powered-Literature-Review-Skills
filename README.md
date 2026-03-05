@@ -120,11 +120,21 @@ flowchart TD
 
 ### 安装
 
+#### 方式一：自然语言安装（推荐）
+
+如果你使用 **OpenCode**、**Kimi CLI**、**Claude Code** 等 AI 编程工具，可以直接用自然语言安装：
+
+> 💬 *"请帮我安装 Literature Survey Skill，从 https://github.com/stephenlzc/AI-Powered-Literature-Review-Skills 克隆到 skills 目录"*
+
+AI 助手会自动完成克隆、依赖安装和配置。
+
+#### 方式二：手动安装
+
 1. 将本 Skill 复制到 Kimi CLI 的 skills 目录：
 
 ```bash
 cd ~/.kimi/skills  # 或你的 Kimi CLI skills 目录
-git clone https://github.com/your-username/literature-survey.git
+git clone https://github.com/stephenlzc/AI-Powered-Literature-Review-Skills.git literature-survey
 ```
 
 2. 安装依赖：
