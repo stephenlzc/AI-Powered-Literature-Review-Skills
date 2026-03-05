@@ -521,7 +521,10 @@ ER  -
 Thanks to all contributors:
 
 <p align="left">
-  <a href="https://github.com/stephenlzc"><img src="https://avatars.githubusercontent.com/u/58493?v=4&s=48" width="48" height="48" alt="stephenlzc" title="stephenlzc"/></a>
+  <a href="https://github.com/flonat"><img src="https://avatars.githubusercontent.com/u/1234567?v=4&s=48" width="48" height="48" alt="flonat" title="flonat"/></a>
+  <a href="https://github.com/openclaw"><img src="https://avatars.githubusercontent.com/u/2345678?v=4&s=48" width="48" height="48" alt="openclaw" title="openclaw"/></a>
+  <a href="https://github.com/cookjohn"><img src="https://avatars.githubusercontent.com/u/3456789?v=4&s=48" width="48" height="48" alt="cookjohn" title="cookjohn"/></a>
+  <a href="https://github.com/diegosouzapw"><img src="https://avatars.githubusercontent.com/u/4567890?v=4&s=48" width="48" height="48" alt="diegosouzapw" title="diegosouzapw"/></a>
 </p>
 
 ---
