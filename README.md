@@ -546,6 +546,14 @@ ER  -
 
 感谢以上项目的作者们为学术工具开源社区做出的贡献！
 
+### 贡献者
+
+Thanks to all contributors:
+
+<p align="left">
+  <a href="https://github.com/stephenlzc"><img src="https://avatars.githubusercontent.com/u/58493?v=4&s=48" width="48" height="48" alt="stephenlzc" title="stephenlzc"/></a>
+</p>
+
 ---
 
 ## 📄 许可证
