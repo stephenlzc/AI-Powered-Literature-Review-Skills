@@ -59,17 +59,20 @@ flowchart TD
     P5[Phase 5: Data Export<br/>数据导出] --> P6
     P6[Phase 6: Paper Analysis<br/>单篇文献分析] --> P7
     P7[Phase 7: Citation Format<br/>引用格式化] --> P8
-    P8[Phase 8: Synthesis<br/>综述生成] --> END[完成]
+    
+    P8[Phase 8: Synthesis<br/>综述生成] --> P8.1
+    P8.1[8.1 Outline<br/>生成大纲] --> P8.2
+    P8.2[8.2 Writing<br/>撰写初稿] --> P8.3
+    P8.3[8.3 Review<br/>质量审查] --> P8.4
+    P8.4[8.4 Final<br/>最终润色] --> END[完成]
+    
+    P8.3 -.->|评分<70| P8.2
+    P8.3 -.->|评分<60| P8.1
     
     P2 -.-> CNKI[(CNKI)]
     P2 -.-> WOS[(Web of Science)]
     P2 -.-> SD[(ScienceDirect)]
     P2 -.-> PM[(PubMed)]
-    
-    P8 -.-> Outline[生成大纲]
-    P8 -.-> Writing[撰写综述]
-    P8 -.-> Review[质量审查]
-    P8 -.-> Final[最终润色]
 ```
 
 ### 各阶段详细说明
@@ -84,7 +87,22 @@ flowchart TD
 | 5 | Data Export | 导出文献信息到Markdown | `references.md` |
 | 6 | Paper Analysis | 单篇文献深度分析 | `papers_analysis.md` |
 | 7 | Citation Format | GB/T 7714-2015格式化 | 格式化的引文列表 |
-| 8 | Synthesis | 生成综述（大纲→撰写→审查→润色） | `literature_review.md` |
+| **8** | **Synthesis** | **综述生成（核心环节）** | **见下方 Sub Phases** |
+
+#### Phase 8 Sub Phases（综述生成详细分解）
+
+| Sub Phase | 名称 | 主要任务 | 输出 |
+|-----------|------|---------|------|
+| 8.1 | **Outline** | 主题聚类，构建综述结构 | `outline.md` |
+| 8.2 | **Writing** | 撰写完整综述初稿（3000-5000字） | `draft.md` |
+| 8.3 | **Review** | 6维度质量审查（加权评分） | `review_report.md` |
+| 8.4 | **Final** | 修订润色，生成摘要和关键词 | `literature_review.md` |
+
+**Phase 8 迭代机制**：
+- 评分 ≥85：小修后直接定稿
+- 评分 70-85：回到 8.2 重写部分章节
+- 评分 60-70：回到 8.1 重新规划结构
+- 评分 <60：检查文献质量，必要时重新检索
 
 ---
 
