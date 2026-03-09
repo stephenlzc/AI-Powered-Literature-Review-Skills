@@ -1,4 +1,4 @@
-# Literature Survey Skill
+# Literature Reviewer Skill
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.8+-blue.svg" alt="Python 3.8+">
@@ -114,7 +114,9 @@ flowchart TD
 
 如果你使用 **Kimi CLI**、**OpenCode**、**Claude Code** 等 AI 编程工具，可以直接用自然语言安装：
 
-> 💬 *"请帮我安装 Literature Survey Skill，从 https://github.com/stephenlzc/AI-Powered-Literature-Review-Skills 克隆到 skills 目录"*
+```bash
+"请帮我安装 Literature Reviewer Skill，从 https://github.com/stephenlzc/AI-Powered-Literature-Review-Skills 克隆到 skills 目录"*
+```
 
 AI 助手会自动完成克隆和配置。
 
@@ -124,7 +126,7 @@ AI 助手会自动完成克隆和配置。
 
 ```bash
 cd ~/.kimi/skills  # 或你的 Kimi CLI skills 目录
-git clone https://github.com/stephenlzc/AI-Powered-Literature-Review-Skills.git literature-survey
+git clone https://github.com/stephenlzc/AI-Powered-Literature-Review-Skills.git literature-reviewer-skill
 ```
 
 2. 完成！无需额外配置，直接使用。
@@ -154,7 +156,7 @@ git clone https://github.com/stephenlzc/AI-Powered-Literature-Review-Skills.git 
 ## 📁 项目结构
 
 ```
-literature-survey/
+literature-reviewer-skill/
 ├── SKILL.md                          # Skill 主入口
 ├── README.md                         # 本文件
 ├── AGENTS.md                         # 项目架构说明
@@ -176,6 +178,11 @@ literature-survey/
 │   ├── deduplicate_papers.py         # 去重工具
 │   └── citation_formatter.py         # 引用格式化
 │
+├── examples/                         # 使用示例（不包含在Skill安装中）
+│   ├── example-3-ai-education/       # 示例3：AI教育评估
+│   ├── example-4-carbon-policy/      # 示例4：碳中和政策
+│   └── example-5-uniqlo-social-media/# 示例5：优衣库社媒营销
+│
 └── sessions/                         # 会话目录（运行时生成）
     └── {YYYYMMDD}_{topic}/
         ├── session_log.md            # 工作日志
@@ -187,6 +194,8 @@ literature-survey/
             ├── papers_analysis.md    # 单篇文献深度分析
             └── literature_review.md  # 最终综述（含摘要、关键词）
 ```
+
+> **Note**: `examples/` 文件夹包含使用示例和参考输出，**不包含在 Skill 安装包中**。如需查看示例，请访问项目仓库。
 
 ---
 
@@ -322,7 +331,7 @@ literature-survey/
 
 MIT License
 
-Copyright (c) 2024 Literature Survey Skill Contributors
+Copyright (c) 2024 Literature Reviewer Skill Contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

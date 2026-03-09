@@ -1,11 +1,13 @@
 ---
-name: literature-survey
+name: literature-reviewer-skill
 description: |
   根据用户提供的论文主题，进行系统性中英文文献回顾（Literature Survey）。
   采用8阶段工作流，支持CNKI、Web of Science、ScienceDirect等主流数据库，
   无需API配置，通过浏览器自动化获取文献信息。
   输出包含GB/T 7714-2015引文、标题、摘要的Markdown文档。
   当用户提到"文献回顾"、"文献综述"、"帮我找文献"、"中英文文献搜索"、"写综述"等关键词时触发。
+
+  NOTE: The 'examples/' folder contains sample outputs and is not included in skill installation.
 ---
 
 # 文献回顾（Literature Survey）

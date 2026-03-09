@@ -1,8 +1,8 @@
-# AGENTS.md - Literature Survey Skill
+# AGENTS.md - Literature Reviewer Skill
 
 ## 项目概述
 
-本项目是一个 **Kimi CLI Skill**（技能插件），名为 `literature-survey`，用于帮助用户进行系统性的学术文献回顾（Literature Survey）。
+本项目是一个 **Kimi CLI Skill**（技能插件），名为 `literature-reviewer-skill`，用于帮助用户进行系统性的学术文献回顾（Literature Survey）。
 
 **版本**: 3.0.0  
 **最后更新**: 2024-03
@@ -31,7 +31,7 @@
 ## 项目结构
 
 ```
-literature-survey/
+literature-reviewer-skill/
 ├── SKILL.md                          # Skill 定义文件（主入口）
 ├── AGENTS.md                         # 本文件
 ├── README.md                         # 项目说明文档

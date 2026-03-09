@@ -1,0 +1,54 @@
+{
+  "session_id": "20240309_ai_education",
+  "topic_zh": "人工智能在教育评估中的应用",
+  "topic_en": "Applications of Artificial Intelligence in Educational Assessment",
+  "created_at": "2024-03-09T10:00:00+08:00",
+  "query_analysis": {
+    "chinese_keywords": [
+      "人工智能", "教育评估", "学习分析", "智能评测", 
+      "自适应学习", "教育数据挖掘", "机器学习", "自然语言处理"
+    ],
+    "english_keywords": [
+      "artificial intelligence", "educational assessment", "learning analytics",
+      "intelligent tutoring", "adaptive learning", "educational data mining",
+      "machine learning", "natural language processing"
+    ],
+    "search_strategy": {
+      "cnki": "SU=('人工智能'+'机器学习'+'深度学习')*('教育评估'+'学习分析'+'智能评测') AND CSSCI=1",
+      "wos": "TS=((\"artificial intelligence\" OR \"machine learning\" OR \"deep learning\") AND (\"educational assessment\" OR \"learning analytics\"))",
+      "sciencedirect": "(artificial intelligence OR machine learning) AND (educational assessment OR learning analytics)"
+    }
+  },
+  "statistics": {
+    "cnki_results": 156,
+    "wos_results": 203,
+    "sciencedirect_results": 89,
+    "total_raw": 448,
+    "after_deduplication": 42,
+    "chinese_papers": 20,
+    "english_papers": 22
+  },
+  "phases_completed": [
+    "phase_0_session_log",
+    "phase_1_query_analysis", 
+    "phase_2_parallel_search",
+    "phase_3_deduplication",
+    "phase_4_verification",
+    "phase_5_data_export",
+    "phase_6_paper_analysis",
+    "phase_7_citation_format",
+    "phase_8_1_outline",
+    "phase_8_2_writing",
+    "phase_8_3_review",
+    "phase_8_4_final"
+  ],
+  "output_files": [
+    "session_log.md",
+    "references.md",
+    "papers_analysis.md",
+    "outline.md",
+    "draft.md",
+    "review_report.md",
+    "literature_review.md"
+  ]
+}

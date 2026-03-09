@@ -1,0 +1,53 @@
+{
+  "session_id": "20240309_carbon_policy",
+  "topic_zh": "中国碳中和政策体系研究",
+  "topic_en": "Carbon Neutrality Policy Framework in China",
+  "created_at": "2024-03-09T14:00:00+08:00",
+  "query_analysis": {
+    "chinese_keywords": [
+      "碳中和", "碳达峰", "气候政策", "低碳转型",
+      "碳排放权交易", "能源政策", "绿色金融", "可持续发展"
+    ],
+    "english_keywords": [
+      "carbon neutrality", "carbon peak", "climate policy",
+      "low-carbon transition", "carbon trading", "energy policy",
+      "green finance", "sustainable development"
+    ],
+    "search_strategy": {
+      "cnki": "SU=('碳中和'+'碳达峰'+'双碳')*('政策'+'路径'+'战略') AND CSSCI=1",
+      "wos": "TS=((\"carbon neutrality\" OR \"carbon peak\" OR \"net-zero\") AND (\"China\" OR \"Chinese\") AND (\"policy\" OR \"strategy\"))"
+    }
+  },
+  "statistics": {
+    "cnki_results": 189,
+    "wos_results": 156,
+    "sciencedirect_results": 67,
+    "total_raw": 412,
+    "after_deduplication": 38,
+    "chinese_papers": 18,
+    "english_papers": 20
+  },
+  "phases_completed": [
+    "phase_0_session_log",
+    "phase_1_query_analysis",
+    "phase_2_parallel_search",
+    "phase_3_deduplication",
+    "phase_4_verification",
+    "phase_5_data_export",
+    "phase_6_paper_analysis",
+    "phase_7_citation_format",
+    "phase_8_1_outline",
+    "phase_8_2_writing",
+    "phase_8_3_review",
+    "phase_8_4_final"
+  ],
+  "output_files": [
+    "session_log.md",
+    "references.md",
+    "papers_analysis.md",
+    "outline.md",
+    "draft.md",
+    "review_report.md",
+    "literature_review.md"
+  ]
+}
