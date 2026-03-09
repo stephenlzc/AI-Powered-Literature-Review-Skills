@@ -178,4 +178,4 @@ docker exec -it literature-reviewer bash
 ---
 
 **最后更新**: 2024-03-09  
-**版本**: v3.0.0
+**版本**: v3.1.0

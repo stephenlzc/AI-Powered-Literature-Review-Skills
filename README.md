@@ -520,6 +520,15 @@ git clone <browser-skill-repo> ~/.kimi/skills/browser
 
 ## 🗺️ 版本历史
 
+### v3.1.0 (2025-03-09)
+
+- ✅ 安全增强：添加完整安全声明（SECURITY.md）
+- ✅ 隔离支持：添加 Docker 运行环境
+- ✅ 依赖声明：添加 mcp.json 和 install.yaml
+- ✅ 多工具兼容：支持 KimiClaw, MaxClaw, Claude Code, OpenCode, TRAE, VS Code
+- ✅ 名称变更：从 literature-survey 更名为 literature-reviewer-skill
+- ✅ 示例丰富：添加3个完整示例（AI教育、碳中和、优衣库营销）
+
 ### v3.0.0 (2024-03)
 
 - ✅ 移除API配置要求

@@ -2,7 +2,7 @@
 # 明确声明依赖和安装要求
 
 name: literature-reviewer-skill
-version: 3.0.0
+version: 3.1.0
 description: 系统性学术文献回顾（Literature Survey）Skill
 
 # 必需的依赖技能

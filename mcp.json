@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/modelcontextprotocol/spec/main/schema.json",
   "name": "literature-reviewer-skill",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "系统性学术文献回顾（Literature Survey）Skill - 支持 CNKI、Web of Science 等数据库的浏览器自动化文献检索与综述生成",
   
   "author": {
