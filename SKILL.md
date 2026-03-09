@@ -50,20 +50,62 @@ sessions/{YYYYMMDD}_{topic_short}/
 
 ## Phase 1: Query Analysis（查询分析）
 
-从用户输入提取核心概念，生成检索策略。
+AI 智能分析研究主题，自动提取核心概念并扩展相关关键词，生成全面的检索策略。
+
+### 分析维度
+
+**1. 核心概念识别**
+- 识别研究主题的核心技术/方法
+- 识别应用领域和场景
+- 识别研究对象和目标
+
+**2. 关键词智能扩展**
+
+| 扩展类型 | 中文示例 | 英文示例 |
+|---------|---------|---------|
+| **同义词** | 深度学习→神经网络、机器学乑 | deep learning→neural network, ML |
+| **近义词** | 诊断→检测、识别、分类、筛查 | diagnosis→detection, recognition |
+| **上位词** | 医学图像→医学影像、生物医学图像 | medical image→medical imaging |
+| **下位词** | 医学图像→CT、MRI、X光、超声 | medical image→CT, MRI, X-ray |
+| **相关概念** | 诊断→预后、分割、病灶检测 | diagnosis→prognosis, segmentation |
+| **领域术语** | 卷积神经网络、迁移学习 | CNN, transfer learning, fine-tuning |
+
+**3. 检索策略生成**
+
+AI 根据分析结果，自动生成各数据库的检索式：
 
 **输入示例**：
 ```
 主题：基于深度学习的医学图像诊断研究
 ```
 
-**输出检索策略**：
+**AI 分析结果**：
+
+```yaml
+核心概念:
+  技术方法: [深度学习, 神经网络, 机器学习, 人工智能]
+  研究对象: [医学图像, 医学影像, CT, MRI, X光, 超声]
+  研究目标: [诊断, 检测, 识别, 分类, 筛查]
+  
+中文扩展词:
+  深度学习: [深度神经网络, DNN, CNN, 卷积神经网络, 迁移学习]
+  医学图像: [医学影像, 生物医学图像, 放射影像, 病理图像]
+  诊断: [辅助诊断, 智能诊断, 疾病识别, 病灶检测]
+  
+英文扩展词:
+  deep_learning: [neural network, machine learning, AI, artificial intelligence]
+  medical_image: [medical imaging, biomedical image, radiology, pathology]
+  diagnosis: [detection, recognition, classification, screening, CAD]
+```
+
+**生成的检索策略**：
 
 | 数据库 | 检索式 |
 |--------|--------|
-| CNKI | SU=('深度学习'+'深度神经网络')*('医学图像'+'医学影像')*('诊断'+'识别') AND CSSCI=1 |
-| WOS | ("deep learning" OR "deep neural network") AND ("medical imaging" OR "medical image") AND ("diagnosis" OR "classification") |
-| ScienceDirect | deep learning AND medical imaging AND diagnosis |
+| CNKI | SU=('深度学习'+'神经网络'+'机器学习')*('医学图像'+'医学影像'+'CT'+'MRI')*('诊断'+'检测'+'识别') AND (CSSCI=1 OR hx=1) |
+| WOS | TS=(("deep learning" OR "neural network*" OR "machine learning") AND ("medical imaging" OR "radiology" OR "CT" OR "MRI") AND ("diagnosis" OR "detection" OR "classification")) |
+| ScienceDirect | (deep learning OR neural network) AND (medical imaging OR radiology) AND (diagnosis OR detection) |
+| PubMed | ("deep learning"[MeSH] OR "neural network"[Title/Abstract]) AND ("diagnostic imaging"[MeSH] OR "radiology"[Title/Abstract]) |
 
 ---
 
