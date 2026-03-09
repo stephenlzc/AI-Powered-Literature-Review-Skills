@@ -15,7 +15,7 @@ description: |
 
 ---
 
-## 8阶段工作流（简化执行版）
+## 8阶段工作流
 
 ```
 Phase 0: Session Log      → 创建会话目录

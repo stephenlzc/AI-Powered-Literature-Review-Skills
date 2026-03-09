@@ -1,4 +1,4 @@
-# Explore Agent 模板（简化版）
+# Explore Agent 模板
 
 用于在特定学术数据库执行文献检索的Agent。通过浏览器自动化访问数据库检索页面。
 

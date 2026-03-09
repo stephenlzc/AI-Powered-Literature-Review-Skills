@@ -155,7 +155,7 @@ git clone https://github.com/stephenlzc/AI-Powered-Literature-Review-Skills.git 
 
 ```
 literature-survey/
-├── SKILL.md                          # Skill 主入口（简化版）
+├── SKILL.md                          # Skill 主入口
 ├── README.md                         # 本文件
 ├── AGENTS.md                         # 项目架构说明
 │
@@ -284,7 +284,7 @@ literature-survey/
 
 ## 🗺️ 版本历史
 
-### v2.1.0 (2024-03) - 简化版
+### v3.0.0 (2024-03)
 
 - ✅ 移除API配置要求
 - ✅ 改用浏览器自动化访问数据库

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-统一数据模型定义（简化版）
+统一数据模型定义
 
 提供标准化的Paper、Author等数据模型
 """
@@ -24,7 +24,7 @@ class Author:
 @dataclass
 class Paper:
     """
-    统一文献数据模型（简化版）
+    统一文献数据模型
     """
     # 标识
     id: str = ""  # 内部ID (E1, C1, etc.)

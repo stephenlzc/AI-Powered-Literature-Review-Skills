@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Literature Survey Skill - 简化版工具脚本
+Literature Survey Skill - 工具脚本
 
 提供基础的文献处理功能：
 - models: 数据模型定义
