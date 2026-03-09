@@ -4,28 +4,27 @@
 
 本项目是一个 **Kimi CLI Skill**（技能插件），名为 `literature-survey`，用于帮助用户进行系统性的学术文献回顾（Literature Survey）。
 
-**版本**: 2.0.0  
-**最后更新**: 2024-01
+**版本**: 2.1.0 (简化版)  
+**最后更新**: 2024-03
 
 ### 核心特性
 
-- **8阶段工作流**：完整的文献调研流程
-- **Agent Swarm 架构**：并行多数据库检索
-- **引用验证机制**：防止幻觉引用
-- **多数据库支持**：17+ 中英文学术平台
-- **多格式输出**：GB/T 7714-2015、BibTeX、RIS、Zotero
+- **8阶段工作流**：完整的文献调研流程（简化执行版）
+- **浏览器自动化**：无需API配置，直接访问数据库
+- **多数据库支持**：CNKI、Web of Science、ScienceDirect、PubMed
+- **结构化输出**：GB/T 7714-2015引文 + 标题 + 摘要的Markdown文档
+- **综述生成**：自动生成结构化的文献综述
 
 ---
 
 ## 技术栈
 
 - **语言**: Python 3.8+
-- **架构**: Agent Swarm 并行架构
-- **异步**: asyncio + aiohttp
+- **架构**: 顺序执行工作流
+- **数据库访问**: 浏览器自动化（Playwright）
 - **外部依赖**:
-  - Kimi CLI 的 `docx` skill
-  - Kimi CLI 的 `pdf` skill
-  - Playwright（CNKI 浏览器自动化）
+  - Kimi CLI 的 `browser` skill
+  - Kimi CLI 的 `docx` skill（可选）
 
 ---
 
@@ -40,27 +39,13 @@ literature-survey/
 ├── agents/                           # Agent 模板目录
 │   ├── explore-agent.md              # 搜索 Agent 模板
 │   ├── verify-agent.md               # 验证 Agent 模板
-│   ├── download-agent.md             # 下载 Agent 模板
 │   ├── synthesize-agent.md           # 综述 Agent 模板
 │   └── orchestrator.md               # 协调器 Agent 模板
 │
-├── scripts/                          # Python 辅助脚本
-│   ├── __init__.py                   # 包初始化
-│   ├── models.py                     # 统一数据模型（Paper、Author等）
-│   ├── utils.py                      # 工具函数（速率限制、重试等）
-│   ├── keyword_extractor.py          # 关键词提取与扩展（增强版）
-│   ├── citation_formatter.py         # 引用格式化（GB/T/BibTeX）
-│   ├── verify_references.py          # 引用验证（DOI/Crossref）
-│   ├── deduplicate_papers.py         # 文献去重（多层策略）
-│   ├── sync_zotero.py                # Zotero 导出
-│   └── session_manager.py            # 会话管理（中断续传）
-│
 ├── references/                       # 参考资料文档
 │   ├── cnki-guide.md                 # CNKI 检索详细指南
-│   ├── english-search-guide.md       # 英文数据库检索指南
-│   ├── gb-t-7714-2015.md             # GB/T 7714-2015 引用格式规范
-│   ├── database-apis.md              # 各数据库 API 参考（新增）
-│   └── workflow-templates.md         # 工作流模板（新增）
+│   ├── database-access.md            # 各数据库访问指南
+│   └── gb-t-7714-2015.md             # GB/T 7714-2015 引用格式规范
 │
 └── assets/                           # 资源目录（预留）
 ```
@@ -69,302 +54,344 @@ literature-survey/
 
 ## 8阶段工作流
 
-### Phase 0: Session Log
-创建会话目录，初始化日志，支持中断续传。
+### Phase 0: Session Log（会话管理）
+
+**目标**：创建会话目录，记录工作进度，支持中断续传
+
+**目录结构**：
+```
+sessions/{YYYYMMDD}_{topic_short}/
+├── session_log.md              # 工作日志
+├── metadata.json               # 会话元数据
+├── papers_raw.json             # 原始检索结果
+├── papers_deduplicated.json    # 去重后文献
+└── output/
+    ├── references.md           # 文献清单（含摘要）
+    └── literature_review.md    # 最终综述
+```
 
 **输出**:
 - `sessions/{session_id}/session_log.md`
 - `sessions/{session_id}/metadata.json`
 
-### Phase 1: Query Analysis
-关键词提取、同义词扩展、检索式构建。
+---
 
-**工具**: `scripts/keyword_extractor.py`
+### Phase 1: Query Analysis（查询分析）
 
-**输出**:
-- `checkpoints/checkpoint_p1.json`
-- 关键词列表（中英文）
-- 各数据库检索表达式
+**目标**：从用户输入提取核心概念，生成中英文检索策略
 
-### Phase 2: Parallel Search
-多数据库并行检索。
+**步骤**：
+1. **识别核心概念**
+   - 研究主题（Topic）
+   - 研究方法（Method）
+   - 研究对象（Object）
 
-**Agent**: Explore Agent
+2. **生成中英文关键词**
 
-**数据库**:
-- 中文: CNKI
-- 英文: Semantic Scholar, PubMed, arXiv, IEEE Xplore, OpenAlex
+   | 类别 | 中文关键词 | 英文关键词 |
+   |------|-----------|-----------|
+   | 核心概念 | 深度学习 | deep learning |
+   | 同义词扩展 | 深度神经网络 | deep neural network |
 
-**输出**:
-- 原始搜索结果（JSON）
+3. **构建检索表达式**
 
-### Phase 3: Deduplication
-多层去重策略。
-
-**工具**: `scripts/deduplicate_papers.py`
-
-**策略**:
-1. DOI 精确匹配
-2. 标题相似度匹配（>0.85）
-3. 作者+年份+期刊匹配
-
-**输出**:
-- 去重后的文献列表
-- 去重报告
-
-### Phase 4: Verification
-引用验证，防止幻觉引用。
-
-**Agent**: Verify Agent  
-**工具**: `scripts/verify_references.py`
-
-**验证源**:
-- Crossref（首选）
-- Semantic Scholar
-- OpenAlex
-- PubMed（医学）
-
-**验证状态**:
-- VERIFIED: 多源确认
-- SINGLE_SOURCE: 单源确认
-- PREPRINT: 预印本
-- RETRACTED: 已撤稿
-- NOT_FOUND: 未找到
-
-### Phase 5: PDF Management
-PDF 下载和管理。
-
-**Agent**: Download Agent
-
-**优先级**:
-1. 直接 PDF 链接
-2. Unpaywall API
-3. 预印本服务器（arXiv等）
-4. 机构访问
-
-### Phase 6: Citation Export
-引用格式化导出。
-
-**工具**: `scripts/citation_formatter.py`, `scripts/sync_zotero.py`
-
-**支持格式**:
-- GB/T 7714-2015
-- BibTeX（Better BibTeX风格）
-- RIS
-- CSL JSON
-
-### Phase 7: Synthesis
-综述生成。
-
-**Agent**: Synthesize Agent
-
-**功能**:
-- 主题聚类
-- 趋势分析
-- Gap 识别
-- 交叉引用生成
+   **CNKI检索式**：
+   ```
+   SU=('深度学习'+'深度神经网络')*('医学图像'+'医学影像')
+   ```
+   
+   **WOS检索式**：
+   ```
+   ("deep learning" OR "deep neural network") AND ("medical imaging")
+   ```
 
 ---
 
-## Agent Swarm 架构
+### Phase 2: Parallel Search（并行检索）
 
-### 协调器（Orchestrator）
+**目标**：通过浏览器自动化在多个数据库执行检索
 
-负责整体工作流协调，管理 Session Log，调度子 Agent。
+**核心数据库**（无需API）：
 
-**职责**:
-- 任务队列管理
-- 并行 Agent 调度
-- 错误恢复
-- 检查点保存
+| 数据库 | 优先级 | 访问方式 |
+|--------|--------|----------|
+| CNKI | 1 | 浏览器访问高级检索页面 |
+| Web of Science | 2 | 浏览器访问检索页面 |
+| ScienceDirect | 3 | 浏览器访问检索页面 |
+| PubMed | 4 | 网页搜索 + 浏览器访问 |
+| Google Scholar | 5 | 网页搜索 |
 
-### 搜索 Agent（Explore Agent）
+**检索执行**（使用Playwright）：
+1. 使用 `browser_navigate` 访问数据库检索页面
+2. 填充检索式，执行搜索
+3. 提取前50条结果
+4. 保存到 `papers_raw.json`
 
-负责在特定数据库执行检索。
+**数据模型**：
+```json
+{
+  "source_db": "cnki",
+  "title": "文献标题",
+  "authors": ["作者1", "作者2"],
+  "journal": "期刊名称",
+  "year": 2023,
+  "volume": "46",
+  "issue": "5",
+  "pages": "1023-1035",
+  "doi": "10.xxxx",
+  "abstract": "摘要内容...",
+  "keywords": ["关键词1", "关键词2"],
+  "url": "原文链接"
+}
+```
 
-**实例**:
-- CNKI Agent
-- Semantic Scholar Agent
-- PubMed Agent
-- arXiv Agent
-- IEEE Agent
+---
 
-**输入**: 检索表达式、筛选条件  
-**输出**: 结构化文献列表
+### Phase 3: Deduplication（去重筛选）
 
-### 验证 Agent（Verify Agent）
+**目标**：合并多源结果，去除重复
 
-负责验证文献真实性和补全元数据。
+**简化去重策略**：
+1. **DOI精确匹配** - 相同DOI视为重复
+2. **标题相似度** - Levenshtein距离 > 0.85 视为重复
+3. **保留规则** - 保留信息更完整的记录
 
-**验证规则**:
-- 每个引用必须通过至少一个验证源确认
-- 预印本检查（查找发表版本）
-- 撤稿检测
+**筛选条件**：
+- 时间范围：近10年优先
+- 来源质量：优先核心期刊
+- 最终数量：中英文各15-25篇，总计30-50篇
 
-### 下载 Agent（Download Agent）
+---
 
-负责 PDF 下载。
+### Phase 4: Verification（基础验证）
 
-**优先级策略**:
-1. 直接链接
-2. Unpaywall
-3. 预印本服务器
-4. 机构访问
+**目标**：确保元数据完整性，过滤明显错误
 
-### 综述 Agent（Synthesize Agent）
+**验证内容**：
+1. **元数据完整性** - 确保标题、作者、期刊、年份存在
+2. **DOI格式校验** - 检查DOI格式有效性
+3. **错误过滤** - 排除标题为"无"或作者缺失的记录
 
-负责生成综述内容。
+**验证状态**：
+- VERIFIED: 元数据完整
+- INCOMPLETE: 部分缺失
+- EXCLUDED: 已过滤
 
-**功能**:
-- 主题聚类
-- 趋势分析
-- Gap 识别
-- 交叉引用生成
+---
+
+### Phase 5: Data Export（数据导出）
+
+**目标**：导出文献信息到Markdown文件
+
+**输出文件**：`output/references.md`
+
+**文件格式**：
+```markdown
+# 文献清单
+
+## 中文文献
+
+### C1
+- **标题**: 基于深度学习的医学图像诊断研究
+- **作者**: 张三, 李四, 王五
+- **期刊**: 计算机学报
+- **年份**: 2023
+- **卷期**: 46(5): 1023-1035
+- **DOI**: 10.xxxx
+- **摘要**: 本文研究了...
+- **来源**: CNKI
+
+## 英文文献
+
+### E1
+- **Title**: Deep Learning for Medical Image Analysis
+- **Authors**: Smith J, Johnson K
+- **Journal**: Nature Medicine
+- **Year**: 2022
+- **DOI**: 10.1038/xxxxx
+- **Abstract**: This study presents...
+- **Source**: ScienceDirect
+```
+
+---
+
+### Phase 6: Citation Format（引用格式化）
+
+**目标**：生成GB/T 7714-2015格式引文
+
+**中文期刊格式**：
+```
+[C1] 张三, 李四, 王五. 基于深度学习的医学图像诊断研究[J]. 计算机学报, 2023, 46(5): 1023-1035. DOI:10.xxxx.
+```
+
+**英文期刊格式**：
+```
+[E1] Smith J, Johnson K, Lee M. Deep learning for medical image analysis[J]. Nature Medicine, 2022, 28(8): 1500-1510. DOI:10.1038/s41591-022-01900-0.
+```
+
+**会议论文格式**：
+```
+[E2] Wang L, Chen X. A novel approach[C]//Proceedings of CVPR. 2023: 1234-1242.
+```
+
+---
+
+### Phase 7: Synthesis（综述生成）
+
+**目标**：撰写结构化的文献综述
+
+**综述结构**：
+```markdown
+# 文献回顾：[研究主题]
+
+## 1 引言
+### 1.1 研究背景
+### 1.2 检索策略
+- 数据库：CNKI、Web of Science、ScienceDirect
+- 检索式：...
+- 时间范围：2014-2024
+- 最终纳入：中文XX篇，英文XX篇
+
+## 2 国内研究现状（中文文献）
+### 2.1 技术研究进展
+### 2.2 应用现状分析
+
+## 3 国外研究现状（英文文献）
+### 3.1 理论研究
+### 3.2 临床应用
+
+## 4 讨论
+### 4.1 国内外对比
+### 4.2 研究趋势与空白
+
+## 5 结论
+
+## 参考文献
+[C1] ...
+[C2] ...
+[E1] ...
+```
+
+**写作原则**：
+- 按主题分类，避免简单罗列
+- 建立文献间的逻辑联系
+- 体现批判性思维
+- 使用交叉引用 `[C1]`、`[E1]`
+
+---
+
+## 数据库访问指南
+
+### CNKI
+
+**访问地址**：`https://kns.cnki.net/kns8/AdvSearch`
+
+**字段代码**：
+| 代码 | 含义 |
+|------|------|
+| SU | 主题 |
+| TI | 篇名 |
+| KY | 关键词 |
+| TKA | 篇关摘 |
+
+**来源筛选**：CSSCI、北大核心、CSCD
+
+### Web of Science
+
+**访问地址**：`https://www.webofscience.com/wos/woscc/advanced-search`
+
+**常用字段**：
+- TS=Topic
+- TI=Title
+- AB=Abstract
+
+### ScienceDirect
+
+**访问地址**：`https://www.sciencedirect.com/search`
+
+---
+
+## 输出文件说明
+
+| 文件 | 路径 | 内容 |
+|------|------|------|
+| 文献清单 | `output/references.md` | 完整文献信息（含摘要） |
+| 综述文档 | `output/literature_review.md` | 结构化综述 |
+| 引文列表 | `output/gb7714_citations.txt` | GB/T格式引文 |
 
 ---
 
 ## 代码规范
 
-### Python 脚本规范
+### 命名规范
+- 类名: `PascalCase`
+- 函数/变量: `snake_case`
+- 常量: `UPPER_CASE`
 
-1. **文件头**
-   ```python
-   #!/usr/bin/env python3
-   """
-   模块功能描述
-   """
-   ```
+### 文献编号
+- **中文文献**: 以 `C` 开头（C1, C2, C3...）
+- **英文文献**: 以 `E` 开头（E1, E2, E3...）
 
-2. **类型注解**
-   ```python
-   from typing import List, Dict, Optional
-   
-   def format_citation(paper: Dict, index: int, lang: str = 'auto') -> str:
-   ```
-
-3. **文档字符串**
-   ```python
-   def extract_keywords(title: str) -> Dict[str, List[str]]:
-       """
-       从标题中提取关键词
-       
-       Args:
-           title: 论文标题
-       
-       Returns:
-           包含中文和英文关键词的字典
-       """
-   ```
-
-4. **命名规范**
-   - 类名: `PascalCase`（如 `KeywordExtractor`）
-   - 函数/变量: `snake_case`（如 `format_citation`）
-   - 常量: `UPPER_CASE`（如 `TERM_MAPPINGS`）
-
-5. **注释语言**: 中文
-
-### 文献引用规范
-
-- **中文文献编号**: 以 `C` 开头（C1, C2, C3...）
-- **英文文献编号**: 以 `E` 开头（E1, E2, E3...）
-- **引用格式**: 严格遵循 GB/T 7714-2015 标准
-- **BibTeX 密钥**: Better BibTeX 格式（AuthorYearTitle）
+### 注释语言
+- 中文注释
 
 ---
 
-## 脚本使用说明
+## 使用示例
 
-### keyword_extractor.py
+**用户请求**：帮我做一个关于"深度学习在肺癌早期诊断中的应用"的文献回顾
 
-```python
-from scripts import KeywordExtractor
+**执行流程**：
+1. **Phase 1**: 生成检索策略
+   - CNKI: SU=('深度学习'+'神经网络')*('肺癌'+'肺结节')*('诊断')
+   - WOS: ("deep learning") AND ("lung cancer") AND ("diagnosis")
 
-extractor = KeywordExtractor()
-report = extractor.analyze("基于深度学习的医学图像诊断研究", domain="medicine")
+2. **Phase 2**: 并行检索
+   - 访问CNKI高级检索页面，提取50条结果
+   - 访问WOS检索页面，提取50条结果
+   - 访问ScienceDirect，提取50条结果
 
-print(f"中文关键词: {report['keywords']['zh']}")
-print(f"CNKI检索式: {report['search_queries']['cnki']}")
-```
+3. **Phase 3**: 去重筛选
+   - 合并结果，按标题相似度去重
+   - 保留中英文各20篇
 
-### citation_formatter.py
+4. **Phase 4**: 基础验证
+   - 检查元数据完整性
+   - 过滤错误记录
 
-```python
-from scripts import CitationFormatter, format_citation
+5. **Phase 5**: 导出数据
+   - 生成 `references.md`
 
-# 使用便捷函数
-citation = format_citation(paper, "E1", style="gb7714")
+6. **Phase 6**: 格式化引文
+   - 生成GB/T 7714-2015格式
 
-# 使用格式化器实例
-formatter = CitationFormatter()
-citations = formatter.format_list(papers, prefix="E")
-```
-
-### verify_references.py
-
-```python
-from scripts import ReferenceVerifier
-
-async with ReferenceVerifier() as verifier:
-    results = await verifier.verify_papers(papers)
-    for r in results:
-        print(f"{r.paper_id}: {r.status.value}")
-```
-
-### deduplicate_papers.py
-
-```python
-from scripts import deduplicate_papers
-
-unique_papers, removed = deduplicate_papers(papers)
-print(f"去重后: {len(unique_papers)} 篇")
-```
-
-### sync_zotero.py
-
-```python
-from scripts import export_to_zotero
-
-exported = export_to_zotero(
-    papers,
-    output_dir="./zotero_export",
-    formats=["bibtex", "ris"]
-)
-```
-
-### session_manager.py
-
-```python
-from scripts import create_resumable_session
-
-manager, metadata = create_resumable_session("研究主题")
-manager.save_checkpoint(1, "Query Analysis", data)
-```
+7. **Phase 7**: 生成综述
+   - 生成 `literature_review.md`
 
 ---
 
-## 开发注意事项
+## 依赖 Skills
 
-1. **异步编程**: 使用 `asyncio` 进行并发处理
-2. **速率限制**: 遵守各数据库的速率限制
-3. **错误处理**: 使用重试机制和错误恢复
-4. **会话管理**: 定期保存检查点
-5. **依赖管理**: 可选依赖使用 try/except 处理
+- **browser** - 数据库检索自动化
+- **docx** - 生成Word格式综述（可选）
+- **web_search** - 辅助获取文献信息
 
 ---
 
 ## 修改历史
 
+### v2.1.0 (2024-03) - 简化版
+- 移除API配置要求
+- 改用浏览器自动化访问数据库
+- 简化去重/验证流程
+- 输出改为Markdown格式（含摘要）
+- 保留8阶段工作流框架
+
 ### v2.0.0 (2024-01)
-- 重构为 8阶段工作流
-- 引入 Agent Swarm 架构
+- 重构为8阶段工作流
+- 引入Agent Swarm架构
 - 新增引用验证机制
-- 新增多数据库支持
-- 新增会话管理（中断续传）
-- 新增 Zotero 同步
-- 重构所有脚本，统一数据模型
+- 新增多数据库API支持
 
 ### v1.0.0 (2023)
 - 初始版本
-- 基础的关键词提取
-- 基础的引用格式化
-- CNKI 检索指南

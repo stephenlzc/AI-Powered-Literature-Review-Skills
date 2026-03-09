@@ -1,482 +1,228 @@
 ---
 name: literature-survey
 description: |
-  根据用户提供的论文标题进行系统性文献回顾（Literature Survey）。
-  采用8阶段工作流和Agent Swarm并行架构：
-  (0) Session Log (1) Query Analysis (2) Parallel Search (3) Deduplication 
-  (4) Verification (5) PDF Management (6) Citation Export (7) Synthesis。
-  支持CNKI、Semantic Scholar、PubMed、arXiv、IEEE等中英文数据库。
-  输出格式：GB/T 7714-2015、BibTeX、Zotero。
+  根据用户提供的论文主题，进行系统性中英文文献回顾（Literature Survey）。
+  采用8阶段工作流，支持CNKI、Web of Science、ScienceDirect等主流数据库，
+  无需API配置，通过浏览器自动化获取文献信息。
+  输出包含GB/T 7714-2015引文、标题、摘要的Markdown文档。
   当用户提到"文献回顾"、"文献综述"、"帮我找文献"、"中英文文献搜索"、"写综述"等关键词时触发。
 ---
 
 # 文献回顾（Literature Survey）
 
-根据用户提供的论文标题，进行系统性的中英文文献检索、验证和综述撰写。
-采用 **8阶段工作流** 和 **Agent Swarm 并行架构**，确保高效、准确、可追溯的文献调研过程。
+根据用户提供的论文主题，进行系统性的中英文文献检索、整理和综述撰写。
+采用 **8阶段工作流**，无需API配置，通过浏览器自动化获取文献。
 
 ---
 
-## 核心架构：Agent Swarm 并行系统
-
-### 子代理职责分工
+## 8阶段工作流（简化执行版）
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                           Orchestrator (协调器)                              │
-│                   管理 Session Log、任务调度、错误恢复                        │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                      │
-        ┌─────────────────────────────┼─────────────────────────────┐
-        │                             │                             │
-        ▼                             ▼                             ▼
-┌───────────────┐         ┌─────────────────┐         ┌───────────────────┐
-│  CNKI Agent   │         │  Semantic       │         │  PubMed Agent     │
-│  (中文文献)    │         │  Scholar Agent  │         │  (生物医学)       │
-└───────────────┘         └─────────────────┘         └───────────────────┘
-        │                             │                             │
-        └─────────────────────────────┼─────────────────────────────┘
-                                      │
-                                      ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                        Deduplicator (去重器)                                 │
-│              DOI精确匹配 + 标题相似度 + 作者/年份/期刊匹配                      │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                      │
-                                      ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                       Verifier (验证器)                                      │
-│         DOI验证 + Crossref查询 + 预印本检查 + 撤稿检测                        │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                      │
-                                      ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                      PDF Downloader (下载器)                                 │
-│         开放获取检查 + Unpaywall API + 预印本服务器                           │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                      │
-                                      ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                      Synthesizer (综述生成器)                                │
-│         主题聚类 + 趋势分析 + Gap识别 + 交叉引用生成                          │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
-
-### 并行搜索策略
-
-| Agent | 目标数据库 | 检索范围 | 预期结果 |
-|-------|-----------|---------|---------|
-| CNKI Agent | 中国知网 | CSSCI、北大核心、CSCD | 中文高质量期刊论文 |
-| Semantic Scholar Agent | Semantic Scholar | 全学科 | 英文期刊论文、预印本 |
-| PubMed Agent | PubMed/MEDLINE | 生物医学领域 | 医学相关文献 |
-| arXiv Agent | arXiv.org | CS、物理、数学 | 最新预印本研究 |
-| IEEE Agent | IEEE Xplore | 工程技术 | 工程领域论文 |
-| ACM Agent | ACM Digital Library | 计算机科学 | 顶会论文 |
-
----
-
-## 8阶段工作流
-
-### Phase 0: Session Log（会话追踪）
-
-**目标**：创建可恢复的检查点，支持中断续传
-
-**操作**：
-1. 创建会话目录：`sessions/{YYYYMMDD}_{topic_short}/`
-2. 初始化日志文件：`session_log.md`
-3. 记录初始参数：查询主题、数据库选择、筛选条件
-4. 设置检查点（每完成一个Phase自动保存）
-
-**日志格式**：
-```markdown
-# Session Log: [主题]
-- Created: [时间戳]
-- Status: [进行中/已完成/中断]
-
-## Phase 1: Query Analysis ✓
-- 输入: [原始查询]
-- 输出: [关键词列表]
-- 检查点: checkpoint_p1.json
-
-## Phase 2: Parallel Search ◐
-- CNKI Agent: 50 results
-- Semantic Scholar Agent: 30 results
-- ...
+Phase 0: Session Log      → 创建会话目录
+Phase 1: Query Analysis   → 生成中英文检索策略  
+Phase 2: Parallel Search  → 浏览器自动化检索
+Phase 3: Deduplication    → 标题相似度去重
+Phase 4: Verification     → 基础元数据校验
+Phase 5: Data Export      → 导出文献信息
+Phase 6: Citation Format  → GB/T 7714-2015格式化
+Phase 7: Synthesis        → 生成综述文档
 ```
 
 ---
 
-### Phase 1: Query Analysis（查询分析）
+## Phase 0: Session Log（会话管理）
 
-**目标**：从用户输入提取核心概念，生成中英文检索策略
+创建会话目录，记录工作进度。
 
-**步骤**：
-1. **识别核心概念**
-   - 研究主题（Topic）
-   - 研究方法（Method）
-   - 研究对象（Object）
-   - 应用领域（Domain）
-
-2. **生成中英文关键词**
-   
-   | 类别 | 中文关键词 | 英文关键词 |
-   |------|-----------|-----------|
-   | 核心概念 | 深度学习 | deep learning |
-   | 同义词扩展 | 深度神经网络、深层学习 | deep neural network, DNN |
-   | 相关术语 | 表示学习 | representation learning |
-
-3. **构建检索表达式**
-
-   **CNKI检索式**：
-   ```
-   SU=('深度学习'+'深度神经网络')*('图像识别'+'图像分类')
-   ```
-   
-   **PubMed检索式**：
-   ```
-   ("deep learning"[Title/Abstract] OR "deep neural network"[Title/Abstract]) 
-   AND ("image recognition"[Title/Abstract] OR "image classification"[Title/Abstract])
-   ```
-   
-   **Semantic Scholar检索式**：
-   ```
-   ("deep learning" OR "deep neural network") AND ("image recognition" OR "image classification")
-   ```
-
-**输出**：
-- `keywords.json`: 中英文关键词及同义词
-- `queries.json`: 各数据库检索表达式
+**目录结构**：
+```
+sessions/{YYYYMMDD}_{topic_short}/
+├── session_log.md          # 工作日志
+├── metadata.json           # 会话元数据
+├── papers_raw.json         # 原始检索结果
+├── papers_deduplicated.json # 去重后文献
+└── output/
+    ├── references.md       # 文献清单（含摘要）
+    └── literature_review.md # 最终综述
+```
 
 ---
 
-### Phase 2: Parallel Search（并行搜索）
+## Phase 1: Query Analysis（查询分析）
 
-**目标**：在多个数据库并行执行检索
+从用户输入提取核心概念，生成检索策略。
 
-#### 2.1 CNKI 高级检索策略
-
-**访问地址**：`https://kns.cnki.net/kns/AdvSearch?classid=7NS01R8M`
-
-**字段代码**：
-| 代码 | 含义 | 使用场景 |
-|------|------|---------|
-| SU | 主题 | 广泛检索 |
-| TI | 篇名 | 精确匹配 |
-| KY | 关键词 | 主题相关 |
-| TKA | 篇关摘 | 最全面 |
-| AU | 作者 | 查找特定作者 |
-| JN | 期刊 | 限定期刊范围 |
-
-**来源类别筛选**：
-- `CSSCI`: 中文社会科学引文索引
-- `hx`: 北大核心期刊
-- `CSCD`: 中国科学引文数据库
-- `SCI`: SCI来源期刊
-- `EI`: EI来源期刊
-
-**检索执行**（使用Playwright自动化）：
-```javascript
-// 详见 references/cnki-guide.md
+**输入示例**：
+```
+主题：基于深度学习的医学图像诊断研究
 ```
 
-#### 2.2 英文数据库并行配置
+**输出检索策略**：
 
-| 数据库 | 优先级 | 检索字段 | 默认排序 |
-|--------|--------|---------|---------|
-| Semantic Scholar | 1 | title, abstract | citationCount:desc |
-| PubMed | 2 (医学) | Title/Abstract | Relevance |
-| arXiv | 3 (CS) | title, abstract | submittedDate:desc |
-| IEEE Xplore | 4 (工程) | Metadata | Publication Year:desc |
-
-#### 2.3 错误处理与重试机制
-
-**速率限制**：
-| 数据库 | 默认限制 | 重试间隔 |
-|--------|---------|---------|
-| Semantic Scholar | 100 req/5min | 3秒 |
-| PubMed | 3 req/s | 0.5秒 |
-| arXiv | 无限制 | 1秒 |
-| Crossref | 礼貌限制 | 1秒 |
-
-**重试策略**：
-- 指数退避：1s → 2s → 4s → 8s → 放弃
-- 最大重试次数：5次
-- 失败后记录到 `failed_searches.json`
-
-#### 2.4 验证码处理
-
-**CNKI验证码**：
-1. 检测到验证码时暂停执行
-2. 提示用户手动完成验证
-3. 用户确认后继续
+| 数据库 | 检索式 |
+|--------|--------|
+| CNKI | SU=('深度学习'+'深度神经网络')*('医学图像'+'医学影像')*('诊断'+'识别') AND CSSCI=1 |
+| WOS | ("deep learning" OR "deep neural network") AND ("medical imaging" OR "medical image") AND ("diagnosis" OR "classification") |
+| ScienceDirect | deep learning AND medical imaging AND diagnosis |
 
 ---
 
-### Phase 3: Deduplication（去重筛选）
+## Phase 2: Parallel Search（并行检索）
 
-**目标**：合并多源结果，去除重复，筛选高质量文献
+**核心数据库**（无需API，浏览器自动化）：
 
-#### 3.1 去重策略
+| 数据库 | 优先级 | 检索方式 |
+|--------|--------|----------|
+| CNKI | 1 | 浏览器访问高级检索页面 |
+| Web of Science | 2 | 浏览器访问检索页面 |
+| ScienceDirect | 3 | 浏览器访问检索页面 |
+| PubMed | 4 | 网页搜索 + 浏览器访问 |
+| Google Scholar | 5 | 网页搜索 |
 
-**第一层：DOI精确匹配**
-```python
-# DOI标准化后匹配
-normalized_doi = doi.lower().strip()
-```
+**检索步骤**：
+1. 使用 `browser_navigate` 访问各数据库检索页面
+2. 填充检索式，执行搜索
+3. 提取前50条结果的标题、作者、期刊、年份、DOI、摘要
+4. 保存到 `papers_raw.json`
 
-**第二层：标题相似度匹配**
-```python
-# 使用Levenshtein距离或余弦相似度
-similarity = calculate_similarity(title1, title2)
-if similarity > 0.85:
-    mark_as_duplicate()
-```
-
-**第三层：元数据匹配**
-- 作者（前3位）+ 年份 + 期刊（前10字符）
-- 用于没有DOI的文献
-
-#### 3.2 质量筛选
-
-**筛选条件**：
-| 维度 | 中文文献 | 英文文献 |
-|------|---------|---------|
-| 时间范围 | 近5年优先 | 近5年优先 |
-| 来源质量 | CSSCI/北大核心/CSCD | Q1-Q2期刊/顶会 |
-| 被引次数 | >10次 | >50次 |
-| 开放获取 | 不限 | OA优先 |
-
-#### 3.3 统一数据模型
-
-**Paper对象（JSON Schema）**：
+**字段提取**：
 ```json
 {
-  "id": "E1",
-  "type": "journal",
-  "source_db": "semantic_scholar",
-  "title": "Deep learning for image recognition",
-  "authors": [
-    {"name": "LeCun Y", "affiliation": "NYU"}
-  ],
-  "journal": "Nature",
-  "year": 2015,
-  "volume": "521",
-  "issue": "7553",
-  "pages": "436-444",
-  "doi": "10.1038/nature14539",
-  "abstract": "...",
-  "keywords": ["deep learning", "neural networks"],
-  "citation_count": 50000,
-  "impact_factor": 43.07,
-  "is_oa": true,
-  "pdf_url": "https://...",
-  "language": "en",
-  "verified": false
+  "source_db": "cnki",
+  "title": "文献标题",
+  "authors": ["作者1", "作者2"],
+  "journal": "期刊名称",
+  "year": 2023,
+  "volume": "46",
+  "issue": "5",
+  "pages": "1023-1035",
+  "doi": "10.xxxx",
+  "abstract": "摘要内容...",
+  "keywords": ["关键词1", "关键词2"],
+  "url": "原文链接"
 }
 ```
 
 ---
 
-### Phase 4: Verification（引用验证）
+## Phase 3: Deduplication（去重筛选）
 
-**目标**：确保引用真实存在，补全准确元数据，避免幻觉引用
+**简化去重策略**：
 
-#### 4.1 验证流程
+1. **DOI匹配** - 相同DOI视为重复
+2. **标题相似度** - Levenshtein距离 > 0.85 视为重复
+3. **保留规则** - 保留信息更完整的记录
 
-```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│   输入文献   │────▶│  DOI验证    │────▶│ 元数据比对   │
-└─────────────┘     └─────────────┘     └─────────────┘
-                                              │
-                        ┌─────────────────────┼─────────────────────┐
-                        ▼                     ▼                     ▼
-                   ┌─────────┐          ┌─────────┐          ┌─────────┐
-                   │ VERIFIED│          │PREPRINT │          │ RETRACTED│
-                   │已验证   │          │预印本   │          │ 已撤稿   │
-                   └─────────┘          └─────────┘          └─────────┘
-```
-
-#### 4.2 验证规则
-
-**CRITICAL RULE**: 每个引用必须通过至少一个验证源确认
-
-**验证源优先级**：
-1. **Crossref**（首选）：DOI解析，获取完整元数据
-2. **Semantic Scholar**：覆盖广，引用数据
-3. **PubMed**：生物医学文献权威
-4. **OpenAlex**：开放学术图谱
-5. **arXiv**：预印本验证
-
-**预印本检查**：
-- 如果文献来自arXiv，搜索是否已有正式发表版本
-- 优先使用期刊版本（通常更完整、经过同行评审）
-
-#### 4.3 验证状态
-
-| 状态 | 含义 | 处理方式 |
-|------|------|---------|
-| VERIFIED | 多源确认存在 | 保留，使用最完整元数据 |
-| SINGLE_SOURCE | 仅单源确认 | 保留，标记待复核 |
-| PREPRINT | 预印本 | 搜索发表版本，优先使用期刊版 |
-| RETRACTED | 已撤稿 | 排除，记录到 `retracted_papers.json` |
-| NOT_FOUND | 无法验证 | 排除，记录警告 |
-| METADATA_MISMATCH | 元数据不一致 | 人工复核 |
-
-#### 4.4 异常处理
-
-**DOI解析失败**：
-- 尝试去除前缀（`10.` → `https://doi.org/10.`）
-- 检查DOI格式有效性
-- 尝试通过标题+作者在Crossref搜索
+**筛选条件**：
+- 时间：近10年优先
+- 来源：优先保留核心期刊/高质量来源
+- 数量：中英文各15-25篇，总计30-50篇
 
 ---
 
-### Phase 5: PDF Management（PDF管理）
+## Phase 4: Verification（基础验证）
 
-**目标**：获取可下载的PDF，建立本地文献库
+简化验证流程：
 
-#### 5.1 PDF获取优先级
-
-```
-1. 直接PDF链接（从数据库获取）
-2. Unpaywall API（开放获取检查）
-3. 预印本服务器（arXiv, bioRxiv, medRxiv）
-4. 机构访问（通过用户提供的访问权限）
-5. 作者主页/ResearchGate（尝试获取）
-```
-
-#### 5.2 Unpaywall API使用
-
-```python
-# 示例：检查开放获取状态
-import requests
-
-response = requests.get(
-    f"https://api.unpaywall.org/v2/{doi}",
-    params={"email": "your@email.com"}
-)
-data = response.json()
-
-if data.get("is_oa"):
-    pdf_url = data["best_oa_location"]["url_for_pdf"]
-```
-
-#### 5.3 文件组织规范
-
-```
-project/
-└── literature/
-    ├── pdfs/
-    │   ├── E1_Deep_learning_for_image_recognition.pdf
-    │   ├── E2_Attention_is_all_you_need.pdf
-    │   └── ...
-    ├── metadata/
-    │   └── papers_index.json
-    └── failed_downloads.txt
-```
-
-**文件命名规则**：
-```
-{ID}_{FirstAuthorSurname}_{Year}_{ShortTitle}.pdf
-
-示例：
-E1_LeCun_2015_Deep_learning_image_recognition.pdf
-C1_张三_2023_基于深度学习的图像识别研究.pdf
-```
+1. **元数据完整性检查** - 确保标题、作者、期刊、年份存在
+2. **DOI格式校验** - 检查DOI格式有效性
+3. **明显错误过滤** - 排除标题为"无"或作者缺失的记录
 
 ---
 
-### Phase 6: Citation Export（引用导出）
+## Phase 5: Data Export（数据导出）
 
-**目标**：生成多种格式的引用文件，支持文献管理工具
+导出文献信息到Markdown文件。
 
-#### 6.1 GB/T 7714-2015 格式
+**输出文件**：`output/references.md`
 
-**期刊论文（中文）**：
-```
-[C1] 张三, 李四, 王五. 基于深度学习的图像识别研究[J]. 计算机学报, 2023, 46(5): 1023-1035. DOI:10.xxxx.
-```
-
-**期刊论文（英文）**：
-```
-[E1] LeCun Y, Bengio Y, Hinton G. Deep learning[J]. Nature, 2015, 521(7553): 436-444. DOI:10.1038/nature14539.
-```
-
-**其他类型**：详见 `references/gb-t-7714-2015.md`
-
-#### 6.2 BibTeX 格式
-
-**Better BibTeX 引用密钥规则**：
-```bibtex
-@article{LeCun2015Deep,
-  author    = {LeCun, Yann and Bengio, Yoshua and Hinton, Geoffrey},
-  title     = {Deep learning},
-  journal   = {Nature},
-  year      = {2015},
-  volume    = {521},
-  number    = {7553},
-  pages     = {436--444},
-  doi       = {10.1038/nature14539},
-  abstract  = {...}
-}
-```
-
-**密钥格式**：`AuthorYearTitle`（如 `LeCun2015Deep`）
-
-#### 6.3 Zotero 集成
-
-**导出步骤**：
-1. 生成 `.bib` 文件
-2. 使用Zotero的"导入"功能
-3. 或使用Zotero Connector浏览器插件直接导入
-
-**自动同步**（可选）：
-- 使用 `scripts/sync_zotero.py` 批量推送
-
----
-
-### Phase 7: Synthesis（综述生成）
-
-**目标**：撰写结构化的文献综述，建立文献间的逻辑联系
-
-#### 7.1 综述结构模板
-
+**文件格式**：
 ```markdown
-# 文献回顾：{论文标题}
+# 文献清单
+
+## 中文文献
+
+### C1
+- **标题**: 基于深度学习的医学图像诊断研究
+- **作者**: 张三, 李四, 王五
+- **期刊**: 计算机学报
+- **年份**: 2023
+- **卷期**: 46(5): 1023-1035
+- **DOI**: 10.xxxx
+- **摘要**: 本文研究了...
+- **来源**: CNKI
+
+### C2
+...
+
+## 英文文献
+
+### E1
+- **Title**: Deep Learning for Medical Image Analysis
+- **Authors**: Smith J, Johnson K, Lee M
+- **Journal**: Nature Medicine
+- **Year**: 2022
+- **Volume/Issue**: 28(8): 1500-1510
+- **DOI**: 10.1038/s41591-022-01900-0
+- **Abstract**: This study presents...
+- **Source**: ScienceDirect
+
+### E2
+...
+```
+
+---
+
+## Phase 6: Citation Format（引用格式化）
+
+生成GB/T 7714-2015格式引文。
+
+**中文期刊格式**：
+```
+[C1] 张三, 李四, 王五. 基于深度学习的医学图像诊断研究[J]. 计算机学报, 2023, 46(5): 1023-1035. DOI:10.xxxx.
+```
+
+**英文期刊格式**：
+```
+[E1] Smith J, Johnson K, Lee M. Deep learning for medical image analysis[J]. Nature Medicine, 2022, 28(8): 1500-1510. DOI:10.1038/s41591-022-01900-0.
+```
+
+**会议论文格式**：
+```
+[E2] Wang L, Chen X. A novel approach[C]//Proceedings of CVPR. 2023: 1234-1242.
+```
+
+---
+
+## Phase 7: Synthesis（综述生成）
+
+生成结构化文献综述文档。
+
+**文档结构**：
+```markdown
+# 文献回顾：基于深度学习的医学图像诊断研究
 
 ## 1 引言
 ### 1.1 研究背景
-### 1.2 研究目的与范围
-### 1.3 文献检索策略
-- 数据库：CNKI、Semantic Scholar、PubMed...
+### 1.2 检索策略
+- 数据库：CNKI、Web of Science、ScienceDirect
 - 检索式：...
-- 筛选标准：...
+- 时间范围：2014-2024
+- 最终纳入：中文XX篇，英文XX篇
 
-## 2 国内研究现状（中文文献）
-### 2.1 {主题分类1}
-在{主题1}方面，国内学者主要从...角度展开研究：
-- 张三等[C1]从...角度发现...
-- 李四等[C2]则关注...
-- 王五等[C3]进一步指出...
+## 2 国内研究现状
+### 2.1 技术研究进展
+### 2.2 应用现状分析
 
-### 2.2 {主题分类2}
-...
+## 3 国外研究现状  
+### 3.1 理论研究
+### 3.2 临床应用
 
-## 3 国外研究现状（英文文献）
-### 3.1 {主题分类1}
-国外研究在{主题1}方面呈现...特点：
-- Smith et al.[E1] proposed...
-- Johnson et al.[E2] demonstrated...
+## 4 讨论
+### 4.1 国内外对比
+### 4.2 研究趋势与空白
 
-### 3.2 {主题分类2}
-...
-
-## 4 国内外研究比较与讨论
-### 4.1 研究热点对比
-### 4.2 方法论差异
-### 4.3 研究空白与趋势
-
-## 5 结论与展望
+## 5 结论
 
 ## 参考文献
 [C1] ...
@@ -484,153 +230,69 @@ C1_张三_2023_基于深度学习的图像识别研究.pdf
 [E1] ...
 ```
 
-#### 7.2 写作原则
+---
 
-**避免简单罗列**：
-- ❌ 错误："A研究了X，B研究了Y，C研究了Z"
-- ✅ 正确："在X问题上，学者们从不同角度展开：A从...角度发现...；B则关注..."
+## 数据库访问指南
 
-**建立文献联系**：
-- 比较不同研究的异同
-- 指出继承关系（如 "基于C1的工作，C2进一步..."）
-- 分析方法论差异
+### CNKI
 
-**批判性思维**：
-- 评价方法优劣
-- 指出研究局限性
-- 识别研究空白（Gap）
+**访问地址**：`https://kns.cnki.net/kns8/AdvSearch`
 
-#### 7.3 交叉引用实现
+**字段代码**：
+| 代码 | 含义 |
+|------|------|
+| SU | 主题 |
+| TI | 篇名 |
+| KY | 关键词 |
+| TKA | 篇关摘 |
 
-**引用格式**：
-| 类型 | 格式 | 示例 |
+**来源筛选**：CSSCI、北大核心、CSCD
+
+### Web of Science
+
+**访问地址**：`https://www.webofscience.com/wos/woscc/advanced-search`
+
+**常用字段**：
+- TS=Topic
+- TI=Title
+- AB=Abstract
+- SO=Source
+
+### ScienceDirect
+
+**访问地址**：`https://www.sciencedirect.com/search`
+
+---
+
+## 输出文件说明
+
+| 文件 | 内容 | 用途 |
 |------|------|------|
-| 单篇中文 | `[C1]` | 张三等[C1]研究发现... |
-| 单篇英文 | `[E1]` | Smith et al.[E1] proposed... |
-| 多篇连续 | `[C1-C3]` | 早期研究[C1-C3]表明... |
-| 多篇不连续 | `[C1,C3,C5]` | 相关研究[C1,C3,C5]显示... |
-
-**Word文档交叉引用**：
-1. 为每条参考文献添加书签（如 `ref_C1`、`ref_E1`）
-2. 文中引用处使用"交叉引用"功能链接到书签
-3. 确保引用编号可点击跳转到参考文献列表
-
----
-
-## 速率限制与错误处理
-
-### 各数据库速率限制
-
-| 数据库 | 默认限制 | 推荐间隔 | 认证要求 |
-|--------|---------|---------|---------|
-| Semantic Scholar | 100 req/5min | 3秒 | 无需 |
-| PubMed E-utilities | 3 req/s | 0.4秒 | 可选API Key |
-| Crossref | 礼貌限制 | 1秒 | 无需 |
-| arXiv | 无明确限制 | 1秒 | 无需 |
-| CNKI | 人工操作 | N/A | 需登录 |
-| OpenAlex | 无限制 | 1秒 | 建议提供邮箱 |
-
-### 重试策略配置
-
-```python
-# 指数退避策略
-RETRY_CONFIG = {
-    "max_retries": 5,
-    "base_delay": 1.0,      # 秒
-    "max_delay": 60.0,      # 秒
-    "exponential_base": 2,
-    "retry_on": [429, 500, 502, 503, 504]
-}
-```
-
-### 错误日志记录
-
-**格式**：
-```json
-{
-  "timestamp": "2024-01-15T10:30:00Z",
-  "phase": "Phase 2: Parallel Search",
-  "agent": "Semantic Scholar",
-  "error_type": "RateLimitExceeded",
-  "message": "429 Too Many Requests",
-  "retry_count": 3,
-  "resolved": false
-}
-```
-
----
-
-## 工具与资源
-
-### 脚本工具
-
-| 脚本 | 功能 | 使用场景 |
-|------|------|---------|
-| `scripts/keyword_extractor.py` | 关键词提取与扩展 | Phase 1 |
-| `scripts/citation_formatter.py` | 引用格式化 | Phase 6 |
-| `scripts/verify_references.py` | 引用验证 | Phase 4 |
-| `scripts/deduplicate_papers.py` | 文献去重 | Phase 3 |
-| `scripts/sync_zotero.py` | Zotero同步 | Phase 6 |
-| `scripts/session_manager.py` | 会话管理 | Phase 0 |
-
-### Agent 模板
-
-| Agent | 模板文件 | 用途 |
-|-------|---------|------|
-| Explore Agent | `agents/explore-agent.md` | 并行搜索 |
-| Verify Agent | `agents/verify-agent.md` | 引用验证 |
-| Download Agent | `agents/download-agent.md` | PDF下载 |
-| Synthesize Agent | `agents/synthesize-agent.md` | 综述生成 |
-| Orchestrator | `agents/orchestrator.md` | 整体协调 |
-
-### 参考资料
-
-- `references/cnki-guide.md`：CNKI检索详细指南（含验证码处理）
-- `references/english-search-guide.md`：英文数据库API指南
-- `references/gb-t-7714-2015.md`：GB/T 7714-2015引用格式规范
-- `references/database-apis.md`：各数据库API对比和速率限制
-- `references/workflow-templates.md`：工作流模板（快速/系统/计量）
-
----
-
-## 质量检查清单
-
-### Phase 0-2（检索阶段）
-- [ ] 关键词覆盖研究主题的核心概念
-- [ ] 中英文关键词均有同义词扩展
-- [ ] 检索表达式使用正确的布尔逻辑
-- [ ] 中文文献检索覆盖CSSCI、北大核心等高质量期刊
-- [ ] 英文文献检索覆盖至少3个主流数据库
-- [ ] 已记录各数据库的检索结果数量
-
-### Phase 3-4（处理阶段）
-- [ ] 去重后保留文献数量合理（建议30-50篇）
-- [ ] 所有保留文献都有DOI或其他唯一标识
-- [ ] 验证状态为VERIFIED或SINGLE_SOURCE
-- [ ] 已排除撤稿文献（RETRACTED）
-- [ ] 预印本已检查是否有正式发表版本
-
-### Phase 5-6（导出阶段）
-- [ ] PDF文件命名符合规范
-- [ ] GB/T 7714-2015格式正确
-- [ ] BibTeX引用密钥符合Better BibTeX规范
-- [ ] 所有作者姓名完整（非"et al."）
-- [ ] DOI格式正确且可解析
-
-### Phase 7（综述阶段）
-- [ ] 综述结构完整（引言-国内-国外-讨论-结论）
-- [ ] 文献按主题分类，非简单罗列
-- [ ] 建立了文献间的逻辑联系
-- [ ] 体现了批判性思维（方法评价、Gap识别）
-- [ ] 文中引用与参考文献列表编号一致
-- [ ] 交叉引用链接可正常跳转
+| `references.md` | 完整文献清单（含摘要） | 文献查阅 |
+| `literature_review.md` | 结构化综述 | 直接使用 |
+| `gb7714_citations.txt` | GB/T格式引文列表 | 复制到论文 |
 
 ---
 
 ## 依赖 Skills
 
-- **docx**：用于生成 Word 文档
-- **pdf**：用于读取 PDF 文献内容
+- **docx** - 生成Word格式综述（可选）
+- **web_search** - 辅助获取文献信息
+- **browser** - 数据库检索自动化
+
+---
+
+## 使用示例
+
+**用户**：帮我做一个关于"深度学习在肺癌早期诊断中的应用"的文献回顾
+
+**执行流程**：
+1. 生成中英文检索策略
+2. 并行检索 CNKI、WOS、ScienceDirect、PubMed
+3. 整理去重，保留中英文各20篇
+4. 导出 `references.md`（含摘要）
+5. 生成 `literature_review.md`（结构化综述）
+6. 输出 GB/T 7714-2015 格式引文
 
 ---
 
@@ -642,6 +304,4 @@ RETRY_CONFIG = {
 - "中英文文献搜索"
 - "写综述"
 - "literature survey"
-- "帮我查相关文献"
-- "系统性文献回顾"
 - "systematic review"
