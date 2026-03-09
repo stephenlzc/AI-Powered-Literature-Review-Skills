@@ -112,44 +112,80 @@ flowchart TD
 
 #### 方式一：自然语言安装（推荐）
 
-如果你使用 **Kimi CLI**、**OpenCode**、**Claude Code** 等 AI 编程工具，可以直接用自然语言安装：
+本 Skill 兼容以下 AI 编程工具的 Skills/MCP 系统：
 
-```bash
-"请帮我安装 Literature Reviewer Skill，从 https://github.com/stephenlzc/AI-Powered-Literature-Review-Skills 克隆到 skills 目录"*
-```
+<p align="left">
+  <img src="https://img.shields.io/badge/Kimi_CLI-1.0+-blue?style=flat-square" alt="Kimi CLI">
+  <img src="https://img.shields.io/badge/KimiClaw-Supported-green?style=flat-square" alt="KimiClaw">
+  <img src="https://img.shields.io/badge/MaxClaw-Supported-green?style=flat-square" alt="MaxClaw">
+  <img src="https://img.shields.io/badge/Claude_Code-Supported-green?style=flat-square" alt="Claude Code">
+  <img src="https://img.shields.io/badge/OpenCode-Supported-green?style=flat-square" alt="OpenCode">
+  <img src="https://img.shields.io/badge/TRAE-Supported-green?style=flat-square" alt="TRAE">
+  <img src="https://img.shields.io/badge/VS_Code_Skills-Supported-green?style=flat-square" alt="VS Code">
+</p>
 
-AI 助手会自动完成克隆和配置。
+如果你使用以上任意 AI 编程工具，可以直接用自然语言安装：
+
+> 💬 **复制以下提示语发送给你的 AI 助手：**
+>
+> ```
+> 请帮我安装 Literature Reviewer Skill。从 GitHub 仓库 https://github.com/stephenlzc/AI-Powered-Literature-Review-Skills 克隆代码，安装到 skills 目录，文件夹命名为 literature-reviewer-skill。
+> ```
+
+AI 助手会自动完成克隆、配置和安装。
 
 #### 方式二：手动安装
 
-1. 将本 Skill 复制到 Kimi CLI 的 skills 目录：
+1. 找到你的 AI 工具的 skills 目录（不同工具路径可能不同）：
+   - Kimi CLI / KimiClaw: `~/.kimi/skills/`
+   - MaxClaw: `~/.maxclaw/skills/`
+   - Claude Code: `~/.claude-code/skills/`
+   - OpenCode: `~/.opencode/skills/`
+   - TRAE: `~/.trae/skills/`
+   - VS Code: `.vscode/skills/`
+
+2. 克隆本仓库到 skills 目录：
 
 ```bash
-cd ~/.kimi/skills  # 或你的 Kimi CLI skills 目录
+# 进入 skills 目录（根据你的工具选择对应路径）
+cd ~/.kimi/skills  # 或其他工具的 skills 目录
+
+# 克隆仓库
 git clone https://github.com/stephenlzc/AI-Powered-Literature-Review-Skills.git literature-reviewer-skill
 ```
 
-2. 完成！无需额外配置，直接使用。
+3. 完成！无需额外配置，重启 AI 工具即可使用。
 
 ### 使用方法
 
-在 Kimi CLI 中输入触发关键词：
+安装完成后，在 AI 工具中输入以下自然语言指令即可触发：
 
+**方式一：直接描述需求**
+```
+帮我做一份关于「基于深度学习的医学图像诊断」的文献综述
+```
+
+**方式二：使用快捷指令**（部分工具支持）
 ```
 / 文献回顾 基于深度学习的医学图像诊断研究
 ```
 
-或：
+**方式三：指定语言和数量**
+```
+帮我找文献：Transformer模型在自然语言处理中的应用，需要中英文各20篇
+```
 
+**方式四：完整的综述撰写**
 ```
-/ 帮我找文献 Transformer模型在自然语言处理中的应用
+请为我撰写一份关于「人工智能在癌症早期筛查中的应用」的文献综述，
+要求：
+- 中文文献20篇，英文文献20篇
+- 时间范围：近5年
+- 输出格式：包含摘要、关键词、正文、参考文献
+- 引用格式：GB/T 7714-2015
 ```
 
-或指定语言和数量：
-
-```
-/ 文献回顾 人工智能在癌症早期筛查中的应用，中文20篇，英文20篇
-```
+AI 助手会自动执行 8 阶段工作流，最终输出完整的文献综述文档。
 
 ---
 
