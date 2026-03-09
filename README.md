@@ -35,14 +35,15 @@
 
 | 功能模块 | 描述 | 状态 |
 |---------|------|------|
-| 🔍 查询分析 | 自动生成中英文检索策略 | ✅ 可用 |
+| 🔍 查询分析 | AI生成中英文关键词和检索策略 | ✅ 可用 |
 | 🌏 中文文献检索 | CNKI 浏览器自动化 | ✅ 可用 |
 | 🌍 英文文献检索 | WOS/ScienceDirect/PubMed | ✅ 可用 |
 | 🔄 智能去重 | 标题相似度匹配 | ✅ 可用 |
 | ✅ 元数据验证 | 基础完整性校验 | ✅ 可用 |
-| 📝 引用格式化 | GB/T 7714-2015 | ✅ 可用 |
 | 📄 数据导出 | Markdown格式（含摘要） | ✅ 可用 |
-| 📝 综述生成 | 结构化文献综述 | ✅ 可用 |
+| 📖 单篇分析 | 深度分析每篇文献 | ✅ 可用 |
+| 📝 引用格式化 | GB/T 7714-2015 | ✅ 可用 |
+| 📝 综述生成 | 四步高质量综述（大纲→撰写→审查→润色） | ✅ 可用 |
 
 ---
 
@@ -51,18 +52,24 @@
 ```mermaid
 flowchart TD
     P0[Phase 0: Session Log<br/>会话管理] --> P1
-    P1[Phase 1: Query Analysis<br/>查询分析] --> P2
+    P1[Phase 1: Query Analysis<br/>AI生成关键词] --> P2
     P2[Phase 2: Parallel Search<br/>并行检索] --> P3
     P3[Phase 3: Deduplication<br/>去重筛选] --> P4
     P4[Phase 4: Verification<br/>基础验证] --> P5
     P5[Phase 5: Data Export<br/>数据导出] --> P6
-    P6[Phase 6: Citation Format<br/>引用格式化] --> P7
-    P7[Phase 7: Synthesis<br/>综述生成] --> END[完成]
+    P6[Phase 6: Paper Analysis<br/>单篇文献分析] --> P7
+    P7[Phase 7: Citation Format<br/>引用格式化] --> P8
+    P8[Phase 8: Synthesis<br/>综述生成] --> END[完成]
     
     P2 -.-> CNKI[(CNKI)]
     P2 -.-> WOS[(Web of Science)]
     P2 -.-> SD[(ScienceDirect)]
     P2 -.-> PM[(PubMed)]
+    
+    P8 -.-> Outline[生成大纲]
+    P8 -.-> Writing[撰写综述]
+    P8 -.-> Review[质量审查]
+    P8 -.-> Final[最终润色]
 ```
 
 ### 各阶段详细说明
@@ -70,13 +77,14 @@ flowchart TD
 | 阶段 | 名称 | 主要任务 | 输出 |
 |------|------|---------|------|
 | 0 | Session Log | 创建会话目录，记录工作进度 | `session_log.md` |
-| 1 | Query Analysis | 关键词提取、检索式构建 | `keywords.json`, `queries.json` |
+| 1 | Query Analysis | AI生成关键词和检索策略 | `keywords.json`, `queries.json` |
 | 2 | Parallel Search | 浏览器访问各数据库检索 | `papers_raw.json` |
 | 3 | Deduplication | 去重、筛选 | `papers_deduplicated.json` |
 | 4 | Verification | 元数据完整性校验 | 验证后的文献列表 |
 | 5 | Data Export | 导出文献信息到Markdown | `references.md` |
-| 6 | Citation Format | GB/T 7714-2015格式化 | 格式化的引文列表 |
-| 7 | Synthesis | 生成结构化综述 | `literature_review.md` |
+| 6 | Paper Analysis | 单篇文献深度分析 | `papers_analysis.md` |
+| 7 | Citation Format | GB/T 7714-2015格式化 | 格式化的引文列表 |
+| 8 | Synthesis | 生成综述（大纲→撰写→审查→润色） | `literature_review.md` |
 
 ---
 
@@ -117,6 +125,12 @@ git clone https://github.com/stephenlzc/AI-Powered-Literature-Review-Skills.git 
 / 帮我找文献 Transformer模型在自然语言处理中的应用
 ```
 
+或指定语言和数量：
+
+```
+/ 文献回顾 人工智能在癌症早期筛查中的应用，中文20篇，英文20篇
+```
+
 ---
 
 ## 📁 项目结构
@@ -138,6 +152,12 @@ literature-survey/
 │   ├── database-access.md            # 数据库访问指南
 │   └── gb-t-7714-2015.md             # GB/T 7714-2015引用格式规范
 │
+├── scripts/                          # 辅助脚本
+│   ├── __init__.py
+│   ├── models.py                     # 数据模型
+│   ├── deduplicate_papers.py         # 去重工具
+│   └── citation_formatter.py         # 引用格式化
+│
 └── sessions/                         # 会话目录（运行时生成）
     └── {YYYYMMDD}_{topic}/
         ├── session_log.md            # 工作日志
@@ -146,7 +166,8 @@ literature-survey/
         ├── papers_deduplicated.json  # 去重后文献
         └── output/
             ├── references.md         # 文献清单（含摘要）
-            └── literature_review.md  # 最终综述
+            ├── papers_analysis.md    # 单篇文献深度分析
+            └── literature_review.md  # 最终综述（含摘要、关键词）
 ```
 
 ---
@@ -210,15 +231,28 @@ literature-survey/
 [E1] Smith J, Johnson K, Lee M. Deep learning for medical image analysis[J]. Nature Medicine, 2022, 28(8): 1500-1510. DOI:10.1038/s41591-022-01900-0.
 ```
 
+### 单篇文献分析 (papers_analysis.md)
+
+每篇文献的深度分析，包含：
+- 主要观点和结论
+- 局限性
+- 争议点
+- 研究内容缺陷
+- 参考文献格式
+
 ### 综述文档 (literature_review.md)
 
-结构化综述，包含：
-1. 引言（研究背景、检索策略）
-2. 国内研究现状（中文文献）
-3. 国外研究现状（英文文献）
-4. 讨论（对比分析、研究趋势）
-5. 结论
-6. 参考文献
+高质量结构化综述，包含：
+1. **标题**
+2. **摘要**（200-300字）
+3. **关键词**（5-8个）
+4. **引言**（研究背景、检索策略）
+5. **理论基础与方法**
+6. **国内研究现状**
+7. **国外研究现状**
+8. **讨论**（对比分析、研究趋势、Gap识别）
+9. **结论**
+10. **参考文献**
 
 ---
 

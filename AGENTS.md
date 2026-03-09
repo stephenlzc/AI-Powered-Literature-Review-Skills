@@ -54,6 +54,20 @@ literature-survey/
 
 ## 8阶段工作流
 
+```
+Phase 0: Session Log      → 创建会话目录
+Phase 1: Query Analysis   → AI生成关键词和检索策略
+Phase 2: Parallel Search  → 浏览器自动化检索
+Phase 3: Deduplication    → 去重筛选
+Phase 4: Verification     → 元数据验证
+Phase 5: Data Export      → 导出文献信息
+Phase 6: Paper Analysis   → 单篇文献深度分析
+Phase 7: Citation Format  → GB/T 7714-2015格式化
+Phase 8: Synthesis        → 生成综述（大纲→撰写→审查→润色）
+```
+
+---
+
 ### Phase 0: Session Log（会话管理）
 
 **目标**：创建会话目录，记录工作进度，支持中断续传
@@ -65,9 +79,11 @@ sessions/{YYYYMMDD}_{topic_short}/
 ├── metadata.json               # 会话元数据
 ├── papers_raw.json             # 原始检索结果
 ├── papers_deduplicated.json    # 去重后文献
+├── papers_analysis.json        # 文献分析结果
 └── output/
     ├── references.md           # 文献清单（含摘要）
-    └── literature_review.md    # 最终综述
+    ├── papers_analysis.md      # 单篇文献深度分析
+    └── literature_review.md    # 最终综述（含摘要、关键词）
 ```
 
 **输出**:
@@ -207,98 +223,72 @@ sessions/{YYYYMMDD}_{topic_short}/
 
 **输出文件**：`output/references.md`
 
-**文件格式**：
-```markdown
-# 文献清单
+---
 
-## 中文文献
+### Phase 6: Paper Analysis（单篇文献分析）
 
-### C1
-- **标题**: 基于深度学习的医学图像诊断研究
-- **作者**: 张三, 李四, 王五
-- **期刊**: 计算机学报
-- **年份**: 2023
-- **卷期**: 46(5): 1023-1035
-- **DOI**: 10.xxxx
-- **摘要**: 本文研究了...
-- **来源**: CNKI
+**目标**：对每篇文献进行深度分析
 
-## 英文文献
+**AI任务**：
+1. 识别主要研究问题和目标
+2. 描述理论框架或模型
+3. 总结研究方法
+4. 提取关键发现和结论
+5. 指出创新点和局限性
+6. 分析与其他研究的关系
+7. 识别争议点和未解决问题
+8. 指出研究趋势和新兴方向
 
-### E1
-- **Title**: Deep Learning for Medical Image Analysis
-- **Authors**: Smith J, Johnson K
-- **Journal**: Nature Medicine
-- **Year**: 2022
-- **DOI**: 10.1038/xxxxx
-- **Abstract**: This study presents...
-- **Source**: ScienceDirect
-```
+**输出文件**：`output/papers_analysis.md`
 
 ---
 
-### Phase 6: Citation Format（引用格式化）
+### Phase 7: Citation Format（引用格式化）
 
 **目标**：生成GB/T 7714-2015格式引文
 
-**中文期刊格式**：
-```
-[C1] 张三, 李四, 王五. 基于深度学习的医学图像诊断研究[J]. 计算机学报, 2023, 46(5): 1023-1035. DOI:10.xxxx.
-```
-
-**英文期刊格式**：
-```
-[E1] Smith J, Johnson K, Lee M. Deep learning for medical image analysis[J]. Nature Medicine, 2022, 28(8): 1500-1510. DOI:10.1038/s41591-022-01900-0.
-```
-
-**会议论文格式**：
-```
-[E2] Wang L, Chen X. A novel approach[C]//Proceedings of CVPR. 2023: 1234-1242.
-```
+**输出**：格式化的引文列表
 
 ---
 
-### Phase 7: Synthesis（综述生成）
+### Phase 8: Synthesis（综述生成）
 
-**目标**：撰写结构化的文献综述
+**目标**：撰写高质量结构化文献综述
 
-**综述结构**：
-```markdown
-# 文献回顾：[研究主题]
+**四步流程**：
 
-## 1 引言
-### 1.1 研究背景
-### 1.2 检索策略
-- 数据库：CNKI、Web of Science、ScienceDirect
-- 检索式：...
-- 时间范围：2014-2024
-- 最终纳入：中文XX篇，英文XX篇
+1. **生成大纲 (Outline)**
+   - 分析文献主题聚类
+   - 构建综述结构
+   - 确定各章节要点
 
-## 2 国内研究现状（中文文献）
-### 2.1 技术研究进展
-### 2.2 应用现状分析
+2. **撰写综述 (Writing)**
+   - 扩展大纲内容
+   - 深度分析和批判
+   - 构建理论框架
 
-## 3 国外研究现状（英文文献）
-### 3.1 理论研究
-### 3.2 临床应用
+3. **质量审查 (Review)**
+   - 评估准确性和全面性
+   - 检查逻辑论证
+   - 验证引用规范
 
-## 4 讨论
-### 4.1 国内外对比
-### 4.2 研究趋势与空白
+4. **最终润色 (Final)**
+   - 完善格式和结构
+   - 撰写摘要和关键词
+   - 最终校对
 
-## 5 结论
+**输出文件**：`output/literature_review.md`
 
-## 参考文献
-[C1] ...
-[C2] ...
-[E1] ...
-```
-
-**写作原则**：
-- 按主题分类，避免简单罗列
-- 建立文献间的逻辑联系
-- 体现批判性思维
-- 使用交叉引用 `[C1]`、`[E1]`
+**包含内容**：
+- 标题
+- 摘要（200-300字）
+- 关键词（5-8个）
+- 引言
+- 理论基础与方法
+- 国内外研究现状
+- 讨论与展望
+- 结论
+- 参考文献
 
 ---
 
