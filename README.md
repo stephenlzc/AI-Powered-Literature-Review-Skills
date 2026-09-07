@@ -1,5 +1,7 @@
 # Literature Reviewer Skill
 
+> **中文（主文档）** | [English](./README_EN.md)
+
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.8+-blue.svg" alt="Python 3.8+">
   <img src="https://img.shields.io/badge/Kimi-Skill-green.svg" alt="Kimi Skill">
