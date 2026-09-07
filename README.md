@@ -565,6 +565,12 @@ git clone <browser-skill-repo> ~/.kimi/skills/browser
 
 ---
 
+## ⭐ Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=stephenlzc%2Fai-powered-literature-review-skills&type=date&legend=top-left)](https://www.star-history.com/#stephenlzc/AI-Powered-Literature-Review-Skills&Date)
+
+---
+
 ## 📄 许可证
 
 MIT License

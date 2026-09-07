@@ -328,6 +328,10 @@ The project draws on ideas and designs from:
 - [cookjohn/cnki-skills](https://github.com/cookjohn/cnki-skills)
 - [diegosouzapw/awesome-omni-skill](https://github.com/diegosouzapw/awesome-omni-skill)
 
+## ⭐ Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=stephenlzc%2Fai-powered-literature-review-skills&type=date&legend=top-left)](https://www.star-history.com/#stephenlzc/AI-Powered-Literature-Review-Skills&Date)
+
 ## License
 
 MIT License. See [LICENSE](./LICENSE) for the complete license text.
